@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Cleo"
+description = "Cleo campaign assistant dashboard: WhatsApp pairing and status for the Publicist and Strategist of Aliu Johnson Temitope."
+version = "1.0.0"
+id = "artifacts/cleo-dashboard"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19587
+
+[services.development]
+run = "pnpm --filter @workspace/cleo-dashboard run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/cleo-dashboard", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/cleo-dashboard/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19587"
+BASE_PATH = "/"

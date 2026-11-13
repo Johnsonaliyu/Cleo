@@ -1,0 +1,104 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: cleo
+    description: Cleo WhatsApp campaign assistant operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /cleo/status:
+    get:
+      operationId: getCleoStatus
+      tags: [cleo]
+      summary: Get Cleo connection status
+      description: Returns WhatsApp pairing state, the current QR payload when pairing is needed, AI provider readiness, and conversation count.
+      responses:
+        "200":
+          description: Cleo status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CleoStatus"
+  /cleo/whatsapp/reset:
+    post:
+      operationId: resetCleoWhatsAppPairing
+      tags: [cleo]
+      summary: Reset WhatsApp pairing
+      description: Clears the current WhatsApp auth session and starts a fresh QR pairing cycle.
+      responses:
+        "200":
+          description: Pairing reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: "#/components/schemas/CleoWhatsAppStatus"
+                required: [status]
+        "409":
+          description: Pairing reset already in progress
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    CleoWhatsAppStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [not_started, connecting, qr_ready, connected, closed, error]
+        connected:
+          type: boolean
+        qr:
+          type: ["string", "null"]
+      required: [status, connected, qr]
+    CleoAiStatus:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        provider:
+          type: ["string", "null"]
+          description: Primary AI provider (Groq).
+        fallback:
+          type: ["string", "null"]
+          description: Fallback AI provider (NVIDIA), if configured.
+      required: [configured, provider, fallback]
+    CleoStatus:
+      type: object
+      properties:
+        whatsapp:
+          $ref: "#/components/schemas/CleoWhatsAppStatus"
+        ai:
+          $ref: "#/components/schemas/CleoAiStatus"
+        sessions:
+          type: integer
+          minimum: 0
+      required: [whatsapp, ai, sessions]
+
