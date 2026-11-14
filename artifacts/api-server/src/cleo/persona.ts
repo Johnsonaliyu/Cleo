@@ -35,9 +35,25 @@ export function isYesNoQuestion(question: string) {
   return YES_NO_START.test(q);
 }
 
+const INTRODUCTION =
+  /\b(introduc\w+|present\w*|announc\w+|meet|welcome)\b[^.?!]{0,100}\b(publicist|strategist|ai agent|ai assistant|assistant|chatbot|bot)\b|\b(introduce yourself|tell (us|me) about yourself|who are you|what are you|what is your role|what('?s| is) your role|what can you do)\b/i;
+
+/**
+ * True when the message introduces Cleo to the group ("I am pleased to introduce my campaign
+ * Publicist and Strategist...") or asks her to explain herself. She then answers in the first person.
+ */
+export function isIntroduction(question: string) {
+  return INTRODUCTION.test(question);
+}
+
 /** Short rules appended to every question. Models follow the most recent instructions best, so this keeps the style from drifting. */
 export function buildReplyReminder(voterName: string | null | undefined, question: string) {
   const first = safeDisplayName(voterName).split(" ")[0];
+
+  if (isIntroduction(question)) {
+    return `[Style rules for this reply only. This message introduces YOU, Cleo, to the group, or asks who you are. Reply in the FIRST PERSON as Cleo. Never describe yourself in the third person (do not say "an AI publicist who operates in the group" or "she"). Warmly greet the Great Patricians, thank whoever introduced you if someone did, and say that you are *Cleo*, the *Publicist & Strategist* for Aliu Johnson Temitope, candidate for President of the Patrician Set of 2012. Say you will help educate voters about his background, leadership record and four-point plan, and answer their questions here in the group and in private DMs. Then add a short bold *How to reach me* line followed by • bullets: in the group, tag me or write my name, Cleo, in your message; in a private chat, message me directly; say Hi to get started. Never tell anyone to tag "@Publicist". About 90 words. Do not use "Yes" or "No" as an opening.]`;
+  }
+
   const opening = isYesNoQuestion(question)
     ? `This is a yes/no question, so begin with a bold *Yes*, *No* or *Not yet* (whichever the facts support), then explain briefly.`
     : `This is NOT a yes/no question, so do NOT begin with Yes or No. Start directly with the answer. If the voter is voicing a doubt or objection, acknowledge it in a few words first, then give evidence.`;
@@ -79,5 +95,4 @@ WHATSAPP FORMAT
 
 KNOWLEDGE BASE
 ${loadKnowledgeBase()}`;
-    }
-  
+}
