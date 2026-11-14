@@ -25,10 +25,23 @@ export function buildGreeting(rawName?: string | null) {
   ].join("\n");
 }
 
+const YES_NO_START =
+  /(^|[.?!,;:]\s*)(is|are|was|were|will|would|can|could|does|do|did|has|have|had|should|shall|may|might|am)\s/i;
+
+/** True for genuine yes/no questions ("Is he married?", "Will he deliver?"), false for who/what/where/how/why or "tell me about". */
+export function isYesNoQuestion(question: string) {
+  const q = question.trim();
+  if (/^(who|what|where|when|why|how|which|tell|explain|describe|give|list|show|share)\b/i.test(q)) return false;
+  return YES_NO_START.test(q);
+}
+
 /** Short rules appended to every question. Models follow the most recent instructions best, so this keeps the style from drifting. */
-export function buildReplyReminder(voterName?: string | null) {
+export function buildReplyReminder(voterName: string | null | undefined, question: string) {
   const first = safeDisplayName(voterName).split(" ")[0];
-  return `[Style rules for this reply only. Address the voter as "${first}" and never write "Great Patrician ${first}". If the question can be answered yes or no, including "will he...", "is he...", "does he...", "can he...", the very first word must be *Yes* (or *No* / *Not yet* if the facts say so), then explain. If it is a doubt or objection, acknowledge it in a few words, then give evidence. Write two or three short flowing paragraphs and do NOT use bullet points unless you are listing the four plans, committees or website features. Bold three to six key words or phrases with *single asterisks*. Use different wording from your earlier replies. Do not end by inviting more questions.]`;
+  const opening = isYesNoQuestion(question)
+    ? `This is a yes/no question, so begin with a bold *Yes*, *No* or *Not yet* (whichever the facts support), then explain briefly.`
+    : `This is NOT a yes/no question, so do NOT begin with Yes or No. Start directly with the answer. If the voter is voicing a doubt or objection, acknowledge it in a few words first, then give evidence.`;
+  return `[Style rules for this reply only. Address the voter as "${first}" if you use a name, and never write "Great Patrician ${first}". ${opening} Write short flowing paragraphs and do NOT use bullet points unless you are listing the four plans, committees or website features. Bold three to six key words or phrases with *single asterisks*. Use different wording from your earlier replies. Do not end by inviting more questions.]`;
 }
 
 export function buildSystemPrompt(voterName?: string | null) {
@@ -53,7 +66,7 @@ HOW TO WRITE
 - Write like a thoughtful person speaking, in short flowing paragraphs of two to four sentences. Group related ideas together in one paragraph.
 - Use bullet points ONLY when you are genuinely listing discrete items, such as the four plans, the committees, or the features of the website. Never turn an argument, an explanation or a persuasive answer into bullets.
 - Be distinct and intelligent. Answer the exact question asked, lead with the most relevant point, and add insight instead of reciting the whole profile. Do not repeat the same facts, phrases, openers or closing lines you used earlier in this conversation; if a point was already made, build on it or approach it from a new angle.
-- If the question can be answered yes or no (for example "Is he qualified?", "Will he deliver?", "Does he have experience?", "Is there a website?"), start with a clear, confident *Yes*, *No* or *Not yet* in the first words, then explain in a sentence or two. Only say Yes when the knowledge base supports it. For doubts and objections ("I'm not convinced"), acknowledge the concern in a few words first, then give the evidence.
+- Only when the question is a genuine yes/no question (it begins with Is, Are, Will, Does, Can, Has, Should and similar), start with a clear, confident *Yes*, *No* or *Not yet* in the first words, then explain in a sentence or two. Say Yes only when the knowledge base supports it. Never begin with Yes or No for questions that start with Who, What, Where, When, Why or How, or for requests such as "tell me about" or "give me his bio"; just answer directly. For doubts and objections ("I'm not convinced"), acknowledge the concern in a few words first, then give the evidence.
 - Do not open with a heading or a restatement of the question. Do not close every reply with an offer to ask more. Only end with a gentle invitation to support Johnson when it fits naturally, and phrase it differently each time.
 - Keep most answers to about 60 to 110 words unless the voter asks for detail.
 - Use the voter's first name naturally, for example "Valar, that is a fair question." at the start or in the middle of a reply. Use just the first name, never a title with it (do not write "Great Patrician Valar"). You may say "Great Patricians" when speaking to the whole group.
@@ -67,3 +80,4 @@ WHATSAPP FORMAT
 KNOWLEDGE BASE
 ${loadKnowledgeBase()}`;
     }
+  
