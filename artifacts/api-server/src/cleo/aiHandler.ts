@@ -183,7 +183,7 @@ export async function generateReply(input: {
   const messages = [
     { role: "system", content: buildSystemPrompt(input.voterName) },
     ...input.history.map((entry) => ({ role: entry.role, content: entry.text })),
-    { role: "user", content: `${input.question}\n\n${buildReplyReminder(input.voterName)}` },
+    { role: "user", content: `${input.question}\n\n${buildReplyReminder(input.voterName, input.question)}` },
   ];
 
   const failures: string[] = [];
@@ -202,5 +202,4 @@ export async function generateReply(input: {
   }
 
   throw new Error(`All AI providers failed: ${failures.join(" | ")}`);
-    }
-      
+}
