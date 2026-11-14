@@ -32,7 +32,7 @@ function getProviders(): Provider[] {
       model: process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b",
       apiKey: groqKey,
       body: {
-        temperature: 0.5,
+        temperature: 0.7,
         // gpt-oss is a reasoning model; reasoning tokens count against this limit.
         max_completion_tokens: 1500,
         reasoning_effort: "low",
@@ -48,7 +48,7 @@ function getProviders(): Provider[] {
       model: process.env.NVIDIA_MODEL?.trim() || "meta/muse-glimmer-30b",
       apiKey: nvidiaKey,
       body: {
-        temperature: 0.6,
+        temperature: 0.7,
         top_p: 0.95,
         max_tokens: 2048,
       },
